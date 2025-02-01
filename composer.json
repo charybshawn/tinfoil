@@ -8,12 +8,15 @@
     "require": {
         "php": "^8.2",
         "bacon/bacon-qr-code": "^3.0",
+        "filament/filament": "^3.2",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/breeze": "^2.3",
+        "laravel/fortify": "^1.25",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.17",
         "laravel/tinker": "^2.9",
+        "spatie/laravel-permission": "^6.10",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
@@ -40,7 +43,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

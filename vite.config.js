@@ -15,6 +15,8 @@ export default defineConfig({
                     includeAbsolute: false,
                 },
             },
+            productionTip: false,
+            devtools: true
         }),
     ],
 });
