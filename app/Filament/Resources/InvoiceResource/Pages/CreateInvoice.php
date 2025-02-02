@@ -16,6 +16,7 @@ class CreateInvoice extends CreateRecord
     {
         $data['number'] = Carbon::now()->format('Ymd') . '-' . 
             sprintf('%03d', \App\Models\Invoice::whereDate('created_at', Carbon::today())->count() + 1);
+        $data['status'] = 'sent';
 
         return $data;
     }
@@ -37,6 +38,18 @@ class CreateInvoice extends CreateRecord
                 ->label('Save')
                 ->color('success')
                 ->icon('heroicon-o-check'),
+            Action::make('saveDraft')
+                ->label('Save Draft')
+                ->color('info')
+                ->icon('heroicon-m-document-arrow-down')
+                ->action(function (array $data) {
+                    $data['status'] = 'draft';
+                    $this->record = $this->handleRecordCreation($data);
+                    
+                    return redirect()->to(
+                        $this->getResource()::getUrl('edit', ['record' => $this->record])
+                    );
+                }),
         ];
     }
 

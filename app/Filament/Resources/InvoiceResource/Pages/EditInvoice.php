@@ -33,6 +33,16 @@ class EditInvoice extends EditRecord
                 ->url(fn ($record) => route('invoice.print', $record))
                 ->openUrlInNewTab()
                 ->icon('heroicon-o-printer'),
+            Action::make('saveDraft')
+                ->label('Save Draft')
+                ->color('info')
+                ->icon('heroicon-m-document-arrow-down')
+                ->action(function (array $data) {
+                    $data['status'] = 'draft';
+                    $this->record->update($data);
+                    
+                    $this->notify('success', 'Invoice saved as draft');
+                }),
             DeleteAction::make(),
         ];
     }
@@ -50,5 +60,14 @@ class EditInvoice extends EditRecord
     protected function getSavedNotification(): ?Notification
     {
         return null;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (!isset($data['status'])) {
+            $data['status'] = 'sent';
+        }
+        
+        return $data;
     }
 } 

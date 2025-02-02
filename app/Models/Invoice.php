@@ -95,8 +95,27 @@ class Invoice extends Model
     {
         parent::boot();
 
-        static::creating(function ($invoice) {
-            $invoice->number = static::generateInvoiceNumber();
+        static::saving(function ($invoice) {
+            if (!$invoice->number) {
+                $invoice->number = static::generateInvoiceNumber();
+            }
+        });
+
+        static::saved(function ($invoice) {
+            if (request()->has('items')) {
+                $items = collect(request()->input('items'))->map(function ($item) {
+                    return new InvoiceItem([
+                        'variation_id' => $item['variation_id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['unit_price'],
+                        'unit_type' => $item['unit_type'],
+                        'unit_value' => $item['unit_value'],
+                    ]);
+                });
+                
+                $invoice->items()->delete(); // Remove existing items
+                $invoice->items()->saveMany($items);
+            }
         });
     }
 } 

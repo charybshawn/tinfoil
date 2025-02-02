@@ -26,9 +26,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Repeater\ItemContainer;
 use Illuminate\Contracts\View\View;
-use App\Filament\Forms\Components\InvoiceItemsTable;
 use Filament\Forms\Components\Concerns;
-use App\Livewire\InvoiceItemsTable;
+use App\Livewire\InvoiceItemsManager;
+use App\Filament\Forms\Components\InvoiceItemsField;
+use Filament\Forms\Components\Group;
 
 class InvoiceResource extends Resource
 {
@@ -44,7 +45,7 @@ class InvoiceResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Group::make()
+                Group::make()
                     ->schema([
                         Forms\Components\Section::make()
                             ->schema([
@@ -89,33 +90,17 @@ class InvoiceResource extends Resource
 
                         Forms\Components\Section::make('Items')
                             ->schema([
-                                \Filament\Forms\Components\View::make('livewire.invoice-items-table')
-                                    ->livewire(InvoiceItemsTable::class)
-                            ])
-                    ]),
-
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make('Status')
-                            ->schema([
-                                Forms\Components\Select::make('status')
-                                    ->options([
-                                        'draft' => 'Draft',
-                                        'sent' => 'Sent',
-                                        'paid' => 'Paid',
-                                        'overdue' => 'Overdue',
-                                    ])
-                                    ->required()
-                                    ->default('draft'),
+                                InvoiceItemsField::make('items')
                             ]),
 
                         Forms\Components\Section::make('Notes')
                             ->schema([
                                 Forms\Components\Textarea::make('notes')
-                                    ->rows(5),
+                                    ->rows(3)
+                                    ->columnSpanFull(),
                             ]),
                     ])
-                    ->columnSpan(['lg' => 1]),
+                    ->columnSpan(['lg' => 3]),
             ])
             ->columns(3);
     }
