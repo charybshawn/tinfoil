@@ -30,4 +30,14 @@ class Customer extends Model
     {
         return $this->belongsTo(CustomerGroup::class, 'group_id');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
 } 

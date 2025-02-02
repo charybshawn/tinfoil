@@ -11,25 +11,20 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            [
-                'name' => 'Fresh Fish',
-                'description' => 'Fresh fish sourced daily from local suppliers',
-            ],
-            [
-                'name' => 'Shellfish',
-                'description' => 'Premium quality shellfish and crustaceans',
-            ],
-            [
-                'name' => 'Specialty Items',
-                'description' => 'Unique and specialty seafood products',
-            ],
+            'Fresh Fish',
+            'Frozen Fish',
+            'Shellfish',
+            'Live Fish',
+            'Fish Fillets',
+            'Smoked Fish',
+            // Add any other categories
         ];
 
-        foreach ($categories as $categoryData) {
-            Category::create([
-                'name' => $categoryData['name'],
-                'slug' => Str::slug($categoryData['name']),
-            ]);
+        foreach ($categories as $categoryName) {
+            Category::firstOrCreate(
+                ['slug' => Str::slug($categoryName)],
+                ['name' => $categoryName]
+            );
         }
     }
 } 

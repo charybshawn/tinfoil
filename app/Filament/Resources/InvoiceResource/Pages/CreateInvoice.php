@@ -1,16 +1,24 @@
 <?php
 
-namespace App\Filament\Resources\CustomerResource\Pages;
+namespace App\Filament\Resources\InvoiceResource\Pages;
 
-use App\Filament\Resources\CustomerResource;
-use Filament\Resources\Pages\EditRecord;
-use Filament\Actions\DeleteAction;
+use App\Filament\Resources\InvoiceResource;
+use Filament\Resources\Pages\CreateRecord;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Carbon\Carbon;
 
-class EditCustomer extends EditRecord
+class CreateInvoice extends CreateRecord
 {
-    protected static string $resource = CustomerResource::class;
+    protected static string $resource = InvoiceResource::class;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['number'] = Carbon::now()->format('Ymd') . '-' . 
+            sprintf('%03d', \App\Models\Invoice::whereDate('created_at', Carbon::today())->count() + 1);
+
+        return $data;
+    }
 
     protected function getHeaderActions(): array
     {
@@ -21,15 +29,14 @@ class EditCustomer extends EditRecord
                     
                     Notification::make()
                         ->success()
-                        ->title('Saved successfully')
+                        ->title('Created successfully')
                         ->send();
 
-                    return redirect()->to(CustomerResource::getUrl('index'));
+                    return redirect()->to(InvoiceResource::getUrl('index'));
                 })
                 ->label('Save')
                 ->color('success')
                 ->icon('heroicon-o-check'),
-            DeleteAction::make(),
         ];
     }
 
@@ -41,10 +48,5 @@ class EditCustomer extends EditRecord
     protected function getSavedNotification(): ?Notification
     {
         return null;
-    }
-
-    public function hasCombinedRelationManagerTabsWithContent(): bool
-    {
-        return true;
     }
 } 

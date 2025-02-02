@@ -16,25 +16,35 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $this->call([
-            RoleAndPermissionSeeder::class,
-            CategorySeeder::class,
-            ProductSeeder::class,
-            CustomerGroupSeeder::class,
-            CustomerSeeder::class,
-        ]);
+        // Clear cache
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create or update admin user
-        $user = User::updateOrCreate(
+        // Create admin user first
+        $user = User::firstOrCreate(
             ['email' => 'charybshawn@gmail.com'],
             [
-                'name' => 'Admin User',
-                'password' => Hash::make('kngfqp57'),
+                'name' => 'Shawn Harper',
+                'password' => bcrypt('kngfqp57'),
                 'email_verified_at' => now(),
             ]
         );
-        
-        // Assign admin role
-        $user->assignRole('admin');
+
+        // Run seeders
+        $this->call([
+            RoleSeeder::class,
+            RoleAndPermissionSeeder::class,
+            CategorySeeder::class,
+            CustomerGroupSeeder::class,
+            CustomerSeeder::class,
+            ProductSeeder::class,
+            PaymentTermsSeeder::class,
+            OrderSeeder::class,
+            InvoiceSeeder::class,
+        ]);
+
+        // Ensure the user has the admin role
+        if (!$user->hasRole('admin')) {
+            $user->assignRole('admin');
+        }
     }
 }

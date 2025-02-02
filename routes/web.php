@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\InvoiceController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -35,5 +36,9 @@ Route::middleware(['auth', 'role:wholesale'])->group(function () {
         return Inertia::render('Wholesale/Pricing');
     });
 });
+
+Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
+    ->name('invoice.print')
+    ->middleware(['auth']);
 
 require __DIR__.'/auth.php';

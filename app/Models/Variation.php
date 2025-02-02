@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Variation extends Model
 {
@@ -13,15 +14,16 @@ class Variation extends Model
     protected $table = 'product_variations';
 
     protected $fillable = [
+        'product_id',
         'name',
-        'upc',
-        'unit_type',
-        'unit_value',
-        'requires_date',
+        'sku',
         'retail_price',
         'wholesale_price',
-        'status',
-        'options',
+        'unit_type',
+        'unit_value',
+        'weight_unit',
+        'weight_value',
+        'stock',
     ];
 
     protected $casts = [
@@ -31,8 +33,13 @@ class Variation extends Model
         'options' => 'array',
     ];
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function invoiceItems()
+    {
+        return $this->hasMany(InvoiceItem::class);
     }
 } 

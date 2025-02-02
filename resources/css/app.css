@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.filament-table-repeater {
+    @apply overflow-hidden rounded-xl border border-gray-200 bg-white;
+}
+
+.filament-table-repeater .filament-forms-repeater-item {
+    @apply border-t first:border-t-0 border-gray-200 p-0;
+}
+
+.filament-table-repeater .filament-forms-repeater-item-wrapper {
+    @apply p-4 bg-white hover:bg-gray-50;
+}
+
+.filament-table-repeater .filament-forms-repeater-header {
+    @apply bg-gray-100 px-4 py-2;
+}
+
+.filament-table-repeater .filament-forms-repeater-header h3 {
+    @apply text-sm font-medium text-gray-900;
+}
+
+.filament-table-repeater .filament-forms-repeater-add-item-button {
+    @apply mt-2;
+}

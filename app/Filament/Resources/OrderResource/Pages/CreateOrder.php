@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\CustomerResource\Pages;
+namespace App\Filament\Resources\OrderResource\Pages;
 
-use App\Filament\Resources\CustomerResource;
-use Filament\Resources\Pages\EditRecord;
-use Filament\Actions\DeleteAction;
+use App\Filament\Resources\OrderResource;
+use Filament\Resources\Pages\CreateRecord;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 
-class EditCustomer extends EditRecord
+class CreateOrder extends CreateRecord
 {
-    protected static string $resource = CustomerResource::class;
+    protected static string $resource = OrderResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -21,15 +20,14 @@ class EditCustomer extends EditRecord
                     
                     Notification::make()
                         ->success()
-                        ->title('Saved successfully')
+                        ->title('Created successfully')
                         ->send();
 
-                    return redirect()->to(CustomerResource::getUrl('index'));
+                    return redirect()->to(OrderResource::getUrl('index'));
                 })
                 ->label('Save')
                 ->color('success')
                 ->icon('heroicon-o-check'),
-            DeleteAction::make(),
         ];
     }
 
@@ -41,10 +39,5 @@ class EditCustomer extends EditRecord
     protected function getSavedNotification(): ?Notification
     {
         return null;
-    }
-
-    public function hasCombinedRelationManagerTabsWithContent(): bool
-    {
-        return true;
     }
 } 
