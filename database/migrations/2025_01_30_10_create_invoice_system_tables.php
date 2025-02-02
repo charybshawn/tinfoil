@@ -37,7 +37,10 @@ return new class extends Migration
             $table->string('unit_value')->nullable();
             $table->string('weight_unit')->nullable();
             $table->boolean('is_recurring')->default(false);
-            $table->text('notes')->nullable();
+            $table->string('title')->nullable()->after('number');
+            $table->text('message')->nullable()->after('title');
+            $table->decimal('discount', 10, 2)->default(0)->after('total');
+            $table->decimal('shipping_charge', 10, 2)->default(0)->after('discount');
             $table->timestamps();
         });
 

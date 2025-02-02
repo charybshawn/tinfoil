@@ -47,62 +47,49 @@ class InvoiceResource extends Resource
             ->schema([
                 Group::make()
                     ->schema([
-                        Forms\Components\Section::make()
+                        Forms\Components\Section::make('Invoice Details')
                             ->schema([
                                 Forms\Components\Select::make('customer_id')
+                                    ->label('Customer')
                                     ->relationship('customer', 'name')
                                     ->required()
                                     ->searchable()
-                                    ->preload(),
-                                
-                                Forms\Components\Select::make('payment_terms_id')
-                                    ->relationship('paymentTerms', 'name')
+                                    ->preload()
+                                    ->columnSpan(1),
+
+                                Forms\Components\TextInput::make('title')
+                                    ->label('Invoice Title')
                                     ->required()
-                                    ->preload(),
+                                    ->columnSpan(1),
 
                                 Forms\Components\DatePicker::make('issue_date')
+                                    ->label('Invoice Date')
                                     ->required()
-                                    ->default(now()),
+                                    ->default(now())
+                                    ->columnSpan(1),
 
-                                Forms\Components\Toggle::make('is_recurring')
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, callable $set) {
-                                        if (!$state) {
-                                            $set('recurring_frequency', null);
-                                            $set('next_invoice_date', null);
-                                        }
-                                    }),
+                                Forms\Components\TextInput::make('number')
+                                    ->label('Invoice ID')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->columnSpan(1),
 
-                                Forms\Components\Select::make('recurring_frequency')
-                                    ->options([
-                                        'weekly' => 'Weekly',
-                                        'monthly' => 'Monthly',
-                                        'quarterly' => 'Quarterly',
-                                    ])
-                                    ->visible(fn (Get $get) => $get('is_recurring'))
-                                    ->required(fn (Get $get) => $get('is_recurring')),
-
-                                Forms\Components\DatePicker::make('next_invoice_date')
-                                    ->visible(fn (Get $get) => $get('is_recurring'))
-                                    ->required(fn (Get $get) => $get('is_recurring')),
+                                Forms\Components\Textarea::make('message')
+                                    ->label('Message')
+                                    ->rows(3)
+                                    ->columnSpan('full'),
                             ])
                             ->columns(2),
 
-                        Forms\Components\Section::make('Items')
+                        Forms\Components\Section::make('Line Items')
                             ->schema([
                                 InvoiceItemsField::make('items')
-                            ]),
-
-                        Forms\Components\Section::make('Notes')
-                            ->schema([
-                                Forms\Components\Textarea::make('notes')
-                                    ->rows(3)
-                                    ->columnSpanFull(),
+                                    ->hiddenLabel()
+                                    ->columnSpanFull()
                             ]),
                     ])
-                    ->columnSpan(['lg' => 3]),
-            ])
-            ->columns(3);
+                    ->columnSpan('full'),
+            ]);
     }
 
     public static function table(Table $table): Table

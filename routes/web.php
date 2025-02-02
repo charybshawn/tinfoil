@@ -5,6 +5,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\InvoiceController;
+use App\Models\Product;
+use App\Http\Controllers\EmailVerificationPromptController;
+use App\Http\Controllers\Api\ProductVariationsController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -23,6 +26,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('verify-email', [EmailVerificationPromptController::class, 'show'])
+        ->name('verification.notice');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -40,5 +45,12 @@ Route::middleware(['auth', 'role:wholesale'])->group(function () {
 Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
     ->name('invoice.print')
     ->middleware(['auth']);
+
+Route::middleware([
+    'auth',
+    config('filament.middleware.base'),
+])->group(function () {
+    Route::get('/admin/api/product-variations/{product}', [ProductVariationsController::class, 'index']);
+});
 
 require __DIR__.'/auth.php';
