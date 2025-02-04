@@ -2,16 +2,16 @@
 
 namespace Database\Seeders;
 
-use App\Models\Order;
 use Illuminate\Database\Seeder;
+use App\Models\Order;
 
 class OrderSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create 20 random orders
+        // Create 10 random orders
         Order::factory()
-            ->count(20)
+            ->count(10)
             ->create();
     }
 } 

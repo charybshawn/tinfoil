@@ -41,4 +41,12 @@ return [
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect' => env('FACEBOOK_REDIRECT_URI'),
     ],
+
+    'square' => [
+        'access_token' => env('SQUARE_ACCESS_TOKEN'),
+        'location_id' => env('SQUARE_LOCATION_ID'),
+        'environment' => env('SQUARE_ENVIRONMENT', 'sandbox'),
+        'application_id' => env('SQUARE_APPLICATION_ID'),
+        'webhook_signature_key' => env('SQUARE_WEBHOOK_SIGNATURE_KEY'),
+    ],
 ]; 

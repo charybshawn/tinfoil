@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Product;
 use App\Models\Variation;
+use App\Models\ProductVariation;
 use Illuminate\Support\Collection;
 
 class InvoiceItemsManager extends Component
@@ -55,8 +56,8 @@ class InvoiceItemsManager extends Component
             }
         }
 
-        if ($field === 'variation_id') {
-            $variation = Variation::find($value);
+        if ($field === 'product_variation_id') {
+            $variation = ProductVariation::find($value);
             if ($variation) {
                 $this->items[$index]['unit_price'] = $variation->price;
                 $this->items[$index]['unit_type'] = $variation->unit_type;
@@ -64,7 +65,7 @@ class InvoiceItemsManager extends Component
             }
         }
 
-        if (in_array($field, ['quantity', 'unit_price', 'variation_id'])) {
+        if (in_array($field, ['quantity', 'unit_price', 'product_variation_id'])) {
             $this->calculateItemSubtotal($index);
         }
 
@@ -87,7 +88,7 @@ class InvoiceItemsManager extends Component
     {
         return [
             'product_id' => '',
-            'variation_id' => '',
+            'product_variation_id' => '',
             'quantity' => 1,
             'unit_price' => 0,
             'unit_type' => '',

@@ -12,7 +12,7 @@ class InvoiceItem extends Model
 
     protected $fillable = [
         'invoice_id',
-        'variation_id',
+        'product_variation_id',
         'quantity',
         'price',
         'line_total',
@@ -35,8 +35,8 @@ class InvoiceItem extends Model
         return $this->belongsTo(Invoice::class);
     }
 
-    public function variation(): BelongsTo
+    public function productVariation(): BelongsTo
     {
-        return $this->belongsTo(Variation::class);
+        return $this->belongsTo(ProductVariation::class, 'product_variation_id');
     }
 } 

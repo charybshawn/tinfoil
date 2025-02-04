@@ -14,6 +14,7 @@ class PaymentTermsSeeder extends Seeder
                 'name' => 'Due on Receipt',
                 'days' => 0,
                 'description' => 'Payment is due immediately upon receipt of invoice',
+                'is_default' => true,
             ],
             [
                 'name' => 'Net 15',

@@ -157,7 +157,7 @@
             @foreach($invoice->items as $item)
             <tr>
                 <td>
-                    <div>{{ $item->variation->name }}</div>
+                    <div>{{ $item->productVariation->name }}</div>
                     <div style="color: var(--secondary-text); font-size: 0.875rem;">
                         {{ $item->unit_value }} {{ $item->unit_type }}
                     </div>

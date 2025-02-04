@@ -12,7 +12,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Carbon\Carbon;
 use App\Models\PaymentTerms;
-use App\Models\Variation;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -30,6 +29,8 @@ use Filament\Forms\Components\Concerns;
 use App\Livewire\InvoiceItemsManager;
 use App\Filament\Forms\Components\InvoiceItemsField;
 use Filament\Forms\Components\Group;
+use App\Models\ProductVariation;
+use App\Models\Variation;
 
 class InvoiceResource extends Resource
 {
@@ -48,6 +49,8 @@ class InvoiceResource extends Resource
                 Group::make()
                     ->schema([
                         Forms\Components\Section::make('Invoice Details')
+                            ->collapsible()
+                            ->collapsed()
                             ->schema([
                                 Forms\Components\Select::make('customer_id')
                                     ->label('Customer')
@@ -55,38 +58,125 @@ class InvoiceResource extends Resource
                                     ->required()
                                     ->searchable()
                                     ->preload()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('name')
+                                            ->required()
+                                            ->maxLength(255),
+                                        
+                                        Forms\Components\TextInput::make('email')
+                                            ->email()
+                                            ->maxLength(255),
+                                        
+                                        Forms\Components\TextInput::make('phone')
+                                            ->tel()
+                                            ->maxLength(255),
+                                        
+                                        Forms\Components\Textarea::make('address')
+                                            ->rows(3)
+                                            ->maxLength(500),
+                                        
+                                        Forms\Components\TextInput::make('tax_number')
+                                            ->maxLength(255),
+                                    ])
+                                    ->createOptionAction(function (Action $action) {
+                                        return $action
+                                            ->modalHeading('Create Customer')
+                                            ->modalButton('Create and Select')
+                                            ->modalWidth('lg');
+                                    }),
+                                Forms\Components\TextInput::make('number')
+                                    ->label('Invoice ID')
+                                    ->default(function () {
+                                        return Invoice::generateInvoiceNumber();
+                                    })
+                                    ->disabled()
+                                    ->dehydrated(true)
                                     ->columnSpan(1),
-
+                                
                                 Forms\Components\TextInput::make('title')
                                     ->label('Invoice Title')
                                     ->required()
-                                    ->columnSpan(1),
+                                    ->columnSpan(3),
+
+                                Forms\Components\Select::make('payment_terms_id')
+                                    ->label('Payment Terms')
+                                    ->relationship('paymentTerms', 'name')
+                                    ->required()
+                                    ->searchable()
+                                    ->preload(),
 
                                 Forms\Components\DatePicker::make('issue_date')
                                     ->label('Invoice Date')
                                     ->required()
                                     ->default(now())
                                     ->columnSpan(1),
-
-                                Forms\Components\TextInput::make('number')
-                                    ->label('Invoice ID')
-                                    ->disabled()
-                                    ->dehydrated(false)
-                                    ->columnSpan(1),
-
-                                Forms\Components\Textarea::make('message')
-                                    ->label('Message')
-                                    ->rows(3)
-                                    ->columnSpan('full'),
                             ])
                             ->columns(2),
 
                         Forms\Components\Section::make('Line Items')
+                            ->collapsible()
                             ->schema([
-                                InvoiceItemsField::make('items')
-                                    ->hiddenLabel()
-                                    ->columnSpanFull()
-                            ]),
+                                Repeater::make('items')
+                                    ->schema([
+                                        Forms\Components\Select::make('product_id')
+                                            ->label('Product')
+                                            ->options(Product::query()->pluck('name', 'id'))
+                                            ->required()
+                                            ->live()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('variation_id', null);
+                                                $set('price', null);
+                                                $set('subtotal', null);
+                                            }),
+
+                                        Forms\Components\Select::make('variation_id')
+                                            ->label('Variation')
+                                            ->options(function (Get $get) {
+                                                $productId = $get('product_id');
+                                                if (!$productId) {
+                                                    return [];
+                                                }
+                                                
+                                                return ProductVariation::query()
+                                                    ->where('product_id', $productId)
+                                                    ->pluck('name', 'id');
+                                            })
+                                            ->required()
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, Set $set) {
+                                                if ($variation = ProductVariation::find($state)) {
+                                                    $set('price', $variation->retail_price);
+                                                }
+                                            })
+                                            ->searchable(),
+
+                                        Forms\Components\TextInput::make('quantity')
+                                            ->required()
+                                            ->numeric()
+                                            ->default(1)
+                                            ->minValue(1)
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                                $price = (float)$get('price');
+                                                $quantity = (float)$state;
+                                                $set('subtotal', $price * $quantity);
+                                            }),
+
+                                        Forms\Components\TextInput::make('price')
+                                            ->required()
+                                            ->numeric()
+                                            ->prefix('$')
+                                            ->disabled(),
+
+                                        Forms\Components\TextInput::make('subtotal')
+                                            ->disabled()
+                                            ->prefix('$')
+                                            ->numeric(),
+                                    ])
+                                    ->columns(5)
+                                    ->defaultItems(1)
+                                    ->reorderableWithButtons()
+                            ])
                     ])
                     ->columnSpan('full'),
             ]);

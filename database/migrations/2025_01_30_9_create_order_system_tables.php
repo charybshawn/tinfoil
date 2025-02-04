@@ -30,7 +30,7 @@ return new class extends Migration
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('variation_id')->constrained('product_variations');
+            $table->foreignId('product_variation_id')->constrained()->onDelete('restrict');
             $table->integer('quantity');
             $table->decimal('price', 10, 2);
             $table->string('unit_type');
@@ -48,23 +48,10 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });
-
-        Schema::create('payments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->string('stripe_payment_intent_id')->nullable();
-            $table->string('stripe_payment_method_id')->nullable();
-            $table->decimal('amount', 10, 2);
-            $table->enum('status', ['pending', 'completed', 'failed', 'refunded'])->default('pending');
-            $table->json('payment_details')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('payments');
         Schema::dropIfExists('order_statuses');
         Schema::dropIfExists('order_items');
         Schema::dropIfExists('orders');

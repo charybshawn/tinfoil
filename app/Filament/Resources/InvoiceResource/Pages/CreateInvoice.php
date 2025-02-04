@@ -12,45 +12,58 @@ class CreateInvoice extends CreateRecord
 {
     protected static string $resource = InvoiceResource::class;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['number'] = Carbon::now()->format('Ymd') . '-' . 
-            sprintf('%03d', \App\Models\Invoice::whereDate('created_at', Carbon::today())->count() + 1);
-        $data['status'] = 'sent';
-
-        return $data;
-    }
-
     protected function getHeaderActions(): array
     {
         return [
             Action::make('save')
                 ->action(function () {
-                    $this->save();
+                    $this->data['status'] = 'sent';
+                    $this->create();
                     
                     Notification::make()
                         ->success()
-                        ->title('Created successfully')
+                        ->title('Invoice created')
                         ->send();
 
                     return redirect()->to(InvoiceResource::getUrl('index'));
                 })
-                ->label('Save')
+                ->label('Save & Send')
                 ->color('success')
-                ->icon('heroicon-o-check'),
-            Action::make('saveDraft')
-                ->label('Save Draft')
-                ->color('info')
-                ->icon('heroicon-m-document-arrow-down')
-                ->action(function (array $data) {
-                    $data['status'] = 'draft';
-                    $this->record = $this->handleRecordCreation($data);
+                ->icon('heroicon-o-paper-airplane'),
+
+            Action::make('draft')
+                ->action(function () {
+                    $this->data['status'] = 'draft';
+                    $this->create();
                     
-                    return redirect()->to(
-                        $this->getResource()::getUrl('edit', ['record' => $this->record])
-                    );
-                }),
+                    Notification::make()
+                        ->success()
+                        ->title('Draft saved')
+                        ->send();
+
+                    return redirect()->to(InvoiceResource::getUrl('index'));
+                })
+                ->label('Save as Draft')
+                ->color('gray')
+                ->icon('heroicon-o-document'),
         ];
+    }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['number'] = Carbon::now()->format('Ymd') . '-' . 
+            sprintf('%03d', \App\Models\Invoice::whereDate('created_at', Carbon::today())->count() + 1);
+
+        if (isset($data['items'])) {
+            foreach ($data['items'] as &$item) {
+                if (isset($item['variation_id'])) {
+                    $item['product_variation_id'] = $item['variation_id'];
+                    unset($item['variation_id']);
+                }
+            }
+        }
+
+        return $data;
     }
 
     protected function getFormActions(): array

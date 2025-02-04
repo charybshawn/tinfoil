@@ -7,6 +7,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\ProductVariation;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -19,13 +20,13 @@ class ItemsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('variation_id')
-                ->relationship('variation', 'name')
+            Forms\Components\Select::make('product_variation_id')
+                ->relationship('productVariation', 'name')
                 ->required()
                 ->searchable()
                 ->preload()
                 ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                    if ($variation = \App\Models\Variation::find($state)) {
+                    if ($variation = ProductVariation::find($state)) {
                         $set('unit_type', $variation->unit_type);
                         $set('unit_value', $variation->unit_value);
                         $set('weight_unit', $variation->weight_unit);
@@ -75,7 +76,7 @@ class ItemsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('variation.name')
+                Tables\Columns\TextColumn::make('productVariation.name')
                     ->searchable()
                     ->sortable(),
 

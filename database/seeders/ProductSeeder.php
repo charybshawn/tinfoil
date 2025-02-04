@@ -4,8 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Product;
-use App\Models\Category;
-use App\Models\Variation;
+use App\Models\ProductVariation;
 use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
@@ -18,7 +17,7 @@ class ProductSeeder extends Seeder
             ->create()
             ->each(function ($product) {
                 $product->variations()->saveMany(
-                    Variation::factory()->count(3)->make()
+                    ProductVariation::factory()->count(3)->make()
                 );
             });
     }

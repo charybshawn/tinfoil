@@ -1,11 +1,15 @@
 @php
     $record = $getRecord();
-    $variations = $record 
-        ? $record->variations 
-        : ($this->data['variations'] ?? collect([]));
+    $variations = collect([]);
+
+    if ($record && method_exists($record, 'variations')) {
+        $variations = $record->variations;
+    } elseif (isset($this->data['variations'])) {
+        $variations = collect($this->data['variations']);
+    }
 @endphp
 
-@if($variations && count($variations) > 0)
+@if($variations->isNotEmpty())
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
@@ -21,14 +25,14 @@
             <tbody>
                 @foreach($variations as $variation)
                     <tr class="border-b">
-                        <td class="py-2 px-4">{{ is_array($variation) ? $variation['name'] : $variation->name }}</td>
-                        <td class="py-2 px-4">{{ is_array($variation) ? $variation['upc'] : $variation->upc }}</td>
-                        <td class="py-2 px-4">{{ is_array($variation) ? $variation['unit_type'] : $variation->unit_type }}</td>
+                        <td class="py-2 px-4">{{ data_get($variation, 'name') }}</td>
+                        <td class="py-2 px-4">{{ data_get($variation, 'upc') }}</td>
+                        <td class="py-2 px-4">{{ data_get($variation, 'unit_type') }}</td>
                         <td class="py-2 px-4">
-                            {{ is_array($variation) ? $variation['weight'] : $variation->weight }}
-                            {{ is_array($variation) ? $variation['weight_unit'] : $variation->weight_unit }}
+                            {{ data_get($variation, 'weight') }}
+                            {{ data_get($variation, 'weight_unit') }}
                         </td>
-                        <td class="py-2 px-4 text-right">${{ is_array($variation) ? $variation['price'] : $variation->price }}</td>
+                        <td class="py-2 px-4 text-right">${{ data_get($variation, 'price') }}</td>
                         <td class="py-2 px-4 text-right">
                             @if(!is_array($variation))
                             <x-filament::button

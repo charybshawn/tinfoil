@@ -74,7 +74,7 @@ class Invoice extends Model
         return $this->issue_date->addDays($this->paymentTerms->days);
     }
 
-    protected static function generateInvoiceNumber(): string
+    public static function generateInvoiceNumber(): string
     {
         return DB::transaction(function () {
             $prefix = 'INV';
@@ -95,7 +95,7 @@ class Invoice extends Model
     {
         parent::boot();
 
-        static::saving(function ($invoice) {
+        static::creating(function ($invoice) {
             if (!$invoice->number) {
                 $invoice->number = static::generateInvoiceNumber();
             }
@@ -105,7 +105,7 @@ class Invoice extends Model
             if (request()->has('items')) {
                 $items = collect(request()->input('items'))->map(function ($item) {
                     return new InvoiceItem([
-                        'variation_id' => $item['variation_id'],
+                        'product_variation_id' => $item['product_variation_id'],
                         'quantity' => $item['quantity'],
                         'price' => $item['unit_price'],
                         'unit_type' => $item['unit_type'],
@@ -113,7 +113,7 @@ class Invoice extends Model
                     ]);
                 });
                 
-                $invoice->items()->delete(); // Remove existing items
+                $invoice->items()->delete();
                 $invoice->items()->saveMany($items);
             }
         });

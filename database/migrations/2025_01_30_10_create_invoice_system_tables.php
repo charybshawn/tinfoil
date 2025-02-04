@@ -8,52 +8,60 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Payment Terms table
+        Schema::create('payment_terms', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->integer('days');
+            $table->text('description')->nullable();
+            $table->boolean('is_default')->default(false);
+            $table->timestamps();
+        });
+
+        // Invoices table
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->string('number')->unique();  // INV-YYYYMMDD-XXX
-            $table->foreignId('customer_id')->constrained();
+            $table->foreignId('customer_id')->constrained()->onDelete('restrict');
+            $table->foreignId('payment_terms_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('number')->unique();
+            $table->string('title')->nullable();
+            $table->text('message')->nullable();
             $table->date('issue_date');
-            $table->date('due_date');
-            $table->decimal('subtotal', 10, 2);
-            $table->decimal('tax', 10, 2);
-            $table->decimal('total', 10, 2);
-            $table->enum('status', ['draft', 'sent', 'partial', 'paid', 'overdue']);
+            $table->decimal('subtotal', 10, 2)->default(0);
+            $table->decimal('tax', 10, 2)->default(0);
+            $table->decimal('total', 10, 2)->default(0);
+            $table->enum('status', ['draft', 'sent', 'paid', 'partial', 'overdue'])->default('draft');
             $table->boolean('is_recurring')->default(false);
-            $table->string('recurring_frequency')->nullable(); // monthly, weekly, etc
-            $table->date('next_invoice_date')->nullable();
-            $table->foreignId('parent_invoice_id')->nullable()->constrained('invoices'); // For recurring series
-            $table->text('notes')->nullable();
+            $table->foreignId('parent_invoice_id')->nullable()->constrained('invoices')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
         });
 
+        // Invoice Items table
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('variation_id')->constrained('product_variations');
-            $table->integer('quantity');
+            $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_variation_id')->constrained()->onDelete('restrict');
+            $table->decimal('quantity', 10, 2);
             $table->decimal('price', 10, 2);
+            $table->decimal('line_total', 10, 2);
             $table->string('unit_type');
             $table->string('unit_value')->nullable();
             $table->string('weight_unit')->nullable();
             $table->boolean('is_recurring')->default(false);
-            $table->string('title')->nullable()->after('number');
-            $table->text('message')->nullable()->after('title');
-            $table->decimal('discount', 10, 2)->default(0)->after('total');
-            $table->decimal('shipping_charge', 10, 2)->default(0)->after('discount');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
 
+        // Invoice Payments table
         Schema::create('invoice_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained();
+            $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
             $table->decimal('amount', 10, 2);
-            $table->enum('method', ['bank_transfer', 'check', 'cash', 'stripe']);
-            $table->string('reference_number')->nullable();
-            $table->date('payment_date');
+            $table->enum('method', ['bank_transfer', 'check', 'cash', 'stripe'])->default('bank_transfer');
+            $table->string('reference')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -62,5 +70,6 @@ return new class extends Migration
         Schema::dropIfExists('invoice_payments');
         Schema::dropIfExists('invoice_items');
         Schema::dropIfExists('invoices');
+        Schema::dropIfExists('payment_terms');
     }
 }; 

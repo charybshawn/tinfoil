@@ -68,6 +68,16 @@ class EditInvoice extends EditRecord
             $data['status'] = 'sent';
         }
         
+        // Make sure any item data uses product_variation_id
+        if (isset($data['items'])) {
+            foreach ($data['items'] as &$item) {
+                if (isset($item['variation_id'])) {
+                    $item['product_variation_id'] = $item['variation_id'];
+                    unset($item['variation_id']);
+                }
+            }
+        }
+        
         return $data;
     }
 } 

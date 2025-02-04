@@ -17,8 +17,8 @@ class ItemsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('variation_id')
-                ->relationship('variation', 'name')
+            Forms\Components\Select::make('product_variation_id')
+                ->relationship('productVariation', 'name')
                 ->required()
                 ->searchable()
                 ->preload(),
@@ -50,7 +50,7 @@ class ItemsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('variation.name')
+                Tables\Columns\TextColumn::make('productVariation.name')
                     ->searchable(),
                     
                 Tables\Columns\TextColumn::make('quantity')
