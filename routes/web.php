@@ -8,6 +8,8 @@ use App\Http\Controllers\InvoiceController;
 use App\Models\Product;
 use App\Http\Controllers\EmailVerificationPromptController;
 use App\Http\Controllers\Api\ProductVariationsController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\InvoicePaymentController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -52,5 +54,21 @@ Route::middleware([
 ])->group(function () {
     Route::get('/admin/api/product-variations/{product}', [ProductVariationsController::class, 'index']);
 });
+
+Route::get('/transactions/{transaction}/print', [TransactionController::class, 'print'])
+    ->name('transaction.print');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/invoices/{invoice}/pay', [InvoiceController::class, 'showPaymentPage'])->name('invoice.pay');
+    Route::post('/invoices/{invoice}/process-payment', [InvoiceController::class, 'processPayment'])->name('invoice.process-payment');
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoice.show');
+});
+
+// Only in local environment
+if (app()->environment('local')) {
+    Route::get('/test/invoice-email/{invoice}', function (Invoice $invoice) {
+        return new App\Mail\InvoiceMail($invoice);
+    });
+}
 
 require __DIR__.'/auth.php';

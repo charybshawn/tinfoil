@@ -11,20 +11,34 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Fresh Fish',
-            'Frozen Fish',
-            'Shellfish',
-            'Live Fish',
-            'Fish Fillets',
-            'Smoked Fish',
-            // Add any other categories
+            [
+                'name' => 'Electronics',
+                'description' => 'Electronic devices and accessories',
+            ],
+            [
+                'name' => 'Office Supplies',
+                'description' => 'Office essentials and stationery',
+            ],
+            [
+                'name' => 'Software',
+                'description' => 'Software licenses and subscriptions',
+            ],
+            [
+                'name' => 'Services',
+                'description' => 'Professional services and consulting',
+            ],
         ];
 
-        foreach ($categories as $categoryName) {
-            Category::firstOrCreate(
-                ['slug' => Str::slug($categoryName)],
-                ['name' => $categoryName]
-            );
+        foreach ($categories as $category) {
+            Category::create([
+                'name' => $category['name'],
+                'slug' => Str::slug($category['name']) . '-' . Str::random(6),
+                'description' => $category['description'],
+                'status' => 'active',
+            ]);
         }
+
+        // Create additional random categories if needed
+        Category::factory()->count(5)->create();
     }
 } 

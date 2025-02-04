@@ -12,13 +12,15 @@ class Payment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'payable_type',
+        'payable_id',
         'amount',
         'method',
         'status',
-        'stripe_payment_intent_id',
-        'stripe_payment_method_id',
+        'square_payment_id',
+        'square_payment_status',
         'reference',
-        'notes'
+        'notes',
     ];
 
     protected $casts = [

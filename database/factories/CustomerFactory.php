@@ -13,16 +13,32 @@ class CustomerFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->phoneNumber(),
-            'address' => fake()->streetAddress(),
-            'city' => fake()->city(),
-            'state' => fake()->state(),
-            'postal_code' => fake()->postcode(),
-            'notes' => fake()->optional()->paragraph(),
+            'name' => $this->faker->company(),
+            'email' => $this->faker->unique()->companyEmail(),
+            'secondary_emails' => $this->faker->boolean(30) ? 
+                [$this->faker->safeEmail(), $this->faker->safeEmail()] : 
+                [],
+            'phone' => $this->faker->phoneNumber(),
+            'street_address' => $this->faker->streetAddress(),
+            'city' => $this->faker->city(),
+            'prov' => $this->faker->stateAbbr(),
+            'country' => $this->faker->country(),
+            'postal_code' => $this->faker->postcode(),
+            'notes' => $this->faker->optional()->paragraph(),
             'status' => 'active',
-            'group_id' => CustomerGroup::inRandomOrder()->first()?->id,
+            'group_id' => CustomerGroup::factory(),
         ];
+    }
+
+    /**
+     * Configure the model factory.
+     */
+    public function configure()
+    {
+        return $this->afterMaking(function (Customer $customer) {
+            //
+        })->afterCreating(function (Customer $customer) {
+            //
+        });
     }
 } 

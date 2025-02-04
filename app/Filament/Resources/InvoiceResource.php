@@ -31,6 +31,8 @@ use App\Filament\Forms\Components\InvoiceItemsField;
 use Filament\Forms\Components\Group;
 use App\Models\ProductVariation;
 use App\Models\Variation;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Forms\Components\TagsInput;
 
 class InvoiceResource extends Resource
 {
@@ -48,7 +50,7 @@ class InvoiceResource extends Resource
             ->schema([
                 Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Invoice Details')
+                        Section::make('Invoice Details')
                             ->collapsible()
                             ->collapsed()
                             ->schema([
@@ -60,23 +62,65 @@ class InvoiceResource extends Resource
                                     ->preload()
                                     ->createOptionForm([
                                         Forms\Components\TextInput::make('name')
-                                            ->required()
-                                            ->maxLength(255),
+                                            ->label('Company Name')
+                                            ->required(),
                                         
                                         Forms\Components\TextInput::make('email')
                                             ->email()
-                                            ->maxLength(255),
+                                            ->required()
+                                            ->unique('customers', 'email'),
+                                        
+                                        Forms\Components\TagsInput::make('secondary_emails')
+                                            ->label('Additional Email Addresses')
+                                            ->placeholder('Add email address')
+                                            ->separator(','),
                                         
                                         Forms\Components\TextInput::make('phone')
                                             ->tel()
-                                            ->maxLength(255),
+                                            ->label('Phone Number'),
                                         
-                                        Forms\Components\Textarea::make('address')
-                                            ->rows(3)
-                                            ->maxLength(500),
+                                        Forms\Components\Select::make('group_id')
+                                            ->relationship('group', 'name')
+                                            ->required()
+                                            ->createOptionForm([
+                                                Forms\Components\TextInput::make('name')
+                                                    ->required(),
+                                                Forms\Components\TextInput::make('discount_percentage')
+                                                    ->numeric()
+                                                    ->label('Discount %')
+                                                    ->suffix('%')
+                                                    ->maxValue(100),
+                                            ]),
                                         
-                                        Forms\Components\TextInput::make('tax_number')
-                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('street_address')
+                                            ->label('Street Address'),
+                                        
+                                        Forms\Components\TextInput::make('city'),
+                                        
+                                        Forms\Components\TextInput::make('prov')
+                                            ->label('Province/State')
+                                            ->length(2),
+                                        
+                                        Forms\Components\TextInput::make('postal_code')
+                                            ->label('Postal/ZIP Code'),
+                                        
+                                        Forms\Components\Select::make('country')
+                                            ->default('Canada')
+                                            ->options([
+                                                'Canada' => 'Canada',
+                                                'United States' => 'United States',
+                                            ]),
+                                        
+                                        Forms\Components\Textarea::make('notes')
+                                            ->rows(3),
+                                        
+                                        Forms\Components\Select::make('status')
+                                            ->options([
+                                                'active' => 'Active',
+                                                'inactive' => 'Inactive',
+                                            ])
+                                            ->default('active')
+                                            ->required(),
                                     ])
                                     ->createOptionAction(function (Action $action) {
                                         return $action
@@ -112,71 +156,6 @@ class InvoiceResource extends Resource
                                     ->columnSpan(1),
                             ])
                             ->columns(2),
-
-                        Forms\Components\Section::make('Line Items')
-                            ->collapsible()
-                            ->schema([
-                                Repeater::make('items')
-                                    ->schema([
-                                        Forms\Components\Select::make('product_id')
-                                            ->label('Product')
-                                            ->options(Product::query()->pluck('name', 'id'))
-                                            ->required()
-                                            ->live()
-                                            ->afterStateUpdated(function (Set $set) {
-                                                $set('variation_id', null);
-                                                $set('price', null);
-                                                $set('subtotal', null);
-                                            }),
-
-                                        Forms\Components\Select::make('variation_id')
-                                            ->label('Variation')
-                                            ->options(function (Get $get) {
-                                                $productId = $get('product_id');
-                                                if (!$productId) {
-                                                    return [];
-                                                }
-                                                
-                                                return ProductVariation::query()
-                                                    ->where('product_id', $productId)
-                                                    ->pluck('name', 'id');
-                                            })
-                                            ->required()
-                                            ->live()
-                                            ->afterStateUpdated(function ($state, Set $set) {
-                                                if ($variation = ProductVariation::find($state)) {
-                                                    $set('price', $variation->retail_price);
-                                                }
-                                            })
-                                            ->searchable(),
-
-                                        Forms\Components\TextInput::make('quantity')
-                                            ->required()
-                                            ->numeric()
-                                            ->default(1)
-                                            ->minValue(1)
-                                            ->live()
-                                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                                                $price = (float)$get('price');
-                                                $quantity = (float)$state;
-                                                $set('subtotal', $price * $quantity);
-                                            }),
-
-                                        Forms\Components\TextInput::make('price')
-                                            ->required()
-                                            ->numeric()
-                                            ->prefix('$')
-                                            ->disabled(),
-
-                                        Forms\Components\TextInput::make('subtotal')
-                                            ->disabled()
-                                            ->prefix('$')
-                                            ->numeric(),
-                                    ])
-                                    ->columns(5)
-                                    ->defaultItems(1)
-                                    ->reorderableWithButtons()
-                            ])
                     ])
                     ->columnSpan('full'),
             ]);

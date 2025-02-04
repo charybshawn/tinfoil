@@ -7,10 +7,19 @@ use Filament\Resources\Pages\EditRecord;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use App\Filament\Resources\InvoiceResource\RelationManagers;
+use Filament\Actions\ActionGroup;
 
 class EditInvoice extends EditRecord
 {
     protected static string $resource = InvoiceResource::class;
+
+    public function getRelationManagers(): array
+    {
+        return [
+            \App\Filament\Resources\InvoiceResource\RelationManagers\ItemsRelationManager::class,
+        ];
+    }
 
     protected function getHeaderActions(): array
     {
@@ -27,29 +36,37 @@ class EditInvoice extends EditRecord
                     return redirect()->to(InvoiceResource::getUrl('index'));
                 })
                 ->label('Save')
-                ->color('success')
-                ->icon('heroicon-o-check'),
-            Action::make('print')
-                ->url(fn ($record) => route('invoice.print', $record))
-                ->openUrlInNewTab()
-                ->icon('heroicon-o-printer'),
+                ->color('success'),
+            Action::make('send')
+                ->action(function () {
+                    $this->record->sendEmail();
+                    
+                    Notification::make()
+                        ->success()
+                        ->title('Invoice sent successfully')
+                        ->send();
+                })
+                ->label('Send Invoice')
+                ->color('primary')
+                ->icon('heroicon-o-paper-airplane')
+                ->visible(fn () => $this->record->status !== 'sent'),
             Action::make('saveDraft')
-                ->label('Save Draft')
-                ->color('info')
-                ->icon('heroicon-m-document-arrow-down')
+                ->label('Draft')
+                ->color('gray')
                 ->action(function (array $data) {
                     $data['status'] = 'draft';
                     $this->record->update($data);
                     
                     $this->notify('success', 'Invoice saved as draft');
                 }),
-            DeleteAction::make(),
+            ActionGroup::make([
+                Action::make('print')
+                    ->url(fn ($record) => route('invoice.print', $record))
+                    ->openUrlInNewTab()
+                    ->icon('heroicon-o-printer'),
+                DeleteAction::make(),
+            ])->grouped()->label('Actions'),
         ];
-    }
-
-    public function hasCombinedRelationManagerTabsWithContent(): bool
-    {
-        return true;
     }
 
     protected function getFormActions(): array
@@ -79,5 +96,10 @@ class EditInvoice extends EditRecord
         }
         
         return $data;
+    }
+
+    protected function hasRelationManagerTabsWithContent(): bool
+    {
+        return false;
     }
 } 

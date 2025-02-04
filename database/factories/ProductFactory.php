@@ -13,12 +13,12 @@ class ProductFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->words(3, true);
+        $name = $this->faker->unique()->words(3, true);
         return [
             'name' => $name,
-            'slug' => Str::slug($name),
-            'description' => fake()->paragraph(),
-            'category_id' => Category::inRandomOrder()->first()->id,
+            'slug' => Str::slug($name) . '-' . Str::random(6),
+            'description' => $this->faker->paragraph(),
+            'category_id' => Category::factory(),
             'status' => 'active',
         ];
     }

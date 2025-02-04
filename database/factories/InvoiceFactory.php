@@ -14,22 +14,28 @@ class InvoiceFactory extends Factory
 
     public function definition(): array
     {
-        $customer = Customer::inRandomOrder()->first();
-        $subtotal = fake()->randomFloat(2, 100, 1000);
+        $customer = Customer::inRandomOrder()->first() ?? Customer::factory()->create();
+        $date = $this->faker->dateTimeBetween('-30 days', 'now');
+        $subtotal = $this->faker->randomFloat(2, 100, 1000);
         $tax = $subtotal * 0.1; // 10% tax
-        
+
         return [
-            'customer_id' => $customer->id,
-            'payment_terms_id' => PaymentTerms::inRandomOrder()->first()->id,
-            'issue_date' => $date = fake()->dateTimeBetween('-30 days', 'now'),
-            'subtotal' => $subtotal,
-            'tax' => $tax,
-            'total' => $subtotal + $tax,
-            'status' => fake()->randomElement(['draft', 'sent', 'partial', 'paid', 'overdue']),
-            'is_recurring' => fake()->boolean(20), // 20% chance of being recurring
-            'recurring_frequency' => fn (array $attrs) => $attrs['is_recurring'] ? fake()->randomElement(['weekly', 'monthly', 'quarterly']) : null,
-            'next_invoice_date' => fn (array $attrs) => $attrs['is_recurring'] ? Carbon::parse($date)->addMonth() : null,
-            'notes' => fake()->optional()->sentence(),
+            'customer_id' => Customer::factory(),
+            'payment_terms_id' => PaymentTerms::factory(),
+            'number' => 'INV-' . $this->faker->unique()->numberBetween(1000, 9999),
+            'issue_date' => now(),
+            'status' => 'draft',
+            'subtotal' => 0,
+            'tax' => 0,
+            'total' => 0,
+            'title' => $this->faker->optional()->sentence(3),
+            'message' => $this->faker->optional()->paragraph(),
+            'is_recurring' => $isRecurring = $this->faker->boolean(20), // 20% chance of being recurring
+            'recurring_frequency' => fn (array $attrs) => $attrs['is_recurring'] ? 
+                $this->faker->randomElement(['weekly', 'monthly', 'quarterly']) : null,
+            'next_invoice_date' => fn (array $attrs) => $attrs['is_recurring'] ? 
+                Carbon::parse($date)->addMonth() : null,
+            'notes' => $this->faker->optional()->sentence(),
         ];
     }
 } 

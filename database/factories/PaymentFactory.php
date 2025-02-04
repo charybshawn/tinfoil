@@ -25,12 +25,10 @@ class PaymentFactory extends Factory
             'payable_type' => $payableType,
             'payable_id' => $payable,
             'amount' => fake()->randomFloat(2, 10, 1000),
-            'method' => fake()->randomElement(['bank_transfer', 'check', 'cash', 'stripe']),
+            'method' => fake()->randomElement(['bank_transfer', 'check', 'cash', 'square']),
             'status' => fake()->randomElement(['pending', 'completed', 'failed', 'refunded']),
-            'stripe_payment_intent_id' => fn (array $attributes) => 
-                $attributes['method'] === 'stripe' ? 'pi_' . fake()->regexify('[A-Za-z0-9]{24}') : null,
-            'stripe_payment_method_id' => fn (array $attributes) => 
-                $attributes['method'] === 'stripe' ? 'pm_' . fake()->regexify('[A-Za-z0-9]{24}') : null,
+            'square_payment_id' => fake()->uuid,
+            'square_payment_status' => fake()->randomElement(['COMPLETED', 'FAILED', 'PENDING']),
             'reference' => fn (array $attributes) => match($attributes['method']) {
                 'bank_transfer' => fake()->regexify('[A-Z0-9]{12}'),
                 'check' => fake()->regexify('[0-9]{6}'),
@@ -75,14 +73,14 @@ class PaymentFactory extends Factory
     }
 
     /**
-     * Configure as a Stripe payment
+     * Configure as a Square payment
      */
-    public function stripe(): static
+    public function square(): static
     {
         return $this->state(fn (array $attributes) => [
-            'method' => 'stripe',
-            'stripe_payment_intent_id' => 'pi_' . fake()->regexify('[A-Za-z0-9]{24}'),
-            'stripe_payment_method_id' => 'pm_' . fake()->regexify('[A-Za-z0-9]{24}'),
+            'method' => 'square',
+            'square_payment_id' => fake()->uuid,
+            'square_payment_status' => 'COMPLETED',
         ]);
     }
 } 

@@ -14,16 +14,19 @@ class Customer extends Model
         'name',
         'email',
         'phone',
-        'address',
+        'street_address',
         'city',
-        'state',
+        'prov',
+        'country',
         'postal_code',
+        'secondary_emails',
         'notes',
         'status',
     ];
 
     protected $casts = [
         'status' => 'string',
+        'secondary_emails' => 'array',
     ];
 
     public function group()

@@ -21,8 +21,8 @@ return new class extends Migration
         // Invoices table
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained()->onDelete('restrict');
-            $table->foreignId('payment_terms_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('payment_terms_id')->nullable()->constrained()->nullOnDelete();
             $table->string('number')->unique();
             $table->string('title')->nullable();
             $table->text('message')->nullable();
@@ -32,7 +32,10 @@ return new class extends Migration
             $table->decimal('total', 10, 2)->default(0);
             $table->enum('status', ['draft', 'sent', 'paid', 'partial', 'overdue'])->default('draft');
             $table->boolean('is_recurring')->default(false);
-            $table->foreignId('parent_invoice_id')->nullable()->constrained('invoices')->onDelete('set null');
+            $table->enum('recurring_frequency', ['weekly', 'monthly', 'quarterly'])->nullable();
+            $table->date('next_invoice_date')->nullable();
+            $table->foreignId('parent_invoice_id')->nullable()->constrained('invoices')->nullOnDelete();
+            $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -40,17 +43,15 @@ return new class extends Migration
         // Invoice Items table
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_variation_id')->constrained()->onDelete('restrict');
-            $table->decimal('quantity', 10, 2);
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_variation_id')->constrained()->cascadeOnDelete();
+            $table->string('description');
+            $table->decimal('quantity', 10, 3);
             $table->decimal('price', 10, 2);
-            $table->decimal('line_total', 10, 2);
-            $table->string('unit_type');
-            $table->string('unit_value')->nullable();
-            $table->string('weight_unit')->nullable();
-            $table->boolean('is_recurring')->default(false);
-            $table->text('notes')->nullable();
+            $table->decimal('tax_rate', 5, 2)->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         // Invoice Payments table

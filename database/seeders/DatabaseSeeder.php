@@ -6,6 +6,7 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,6 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+
+        // Truncate all tables
+        DB::table('customer_groups')->truncate();
+        DB::table('transactions')->truncate();
+        DB::table('transaction_items')->truncate();
+        // Add other tables you need to truncate
+
         // User::factory(10)->create();
 
         // Clear cache
@@ -38,8 +46,8 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             ProductSeeder::class,
             PaymentTermsSeeder::class,
-            OrderSeeder::class,
             InvoiceSeeder::class,
+            TransactionSeeder::class,
         ]);
 
         // Ensure the user has the admin role

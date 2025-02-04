@@ -2,8 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\InvoiceItem;
+use App\Models\Invoice;
+use App\Models\Product;
 use App\Models\ProductVariation;
+use App\Models\InvoiceItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class InvoiceItemFactory extends Factory
@@ -12,17 +14,16 @@ class InvoiceItemFactory extends Factory
 
     public function definition(): array
     {
-        $variation = ProductVariation::inRandomOrder()->first();
+        $variation = ProductVariation::factory()->create();
         
         return [
+            'invoice_id' => Invoice::factory(),
+            'product_id' => $variation->product_id,
             'product_variation_id' => $variation->id,
-            'quantity' => fake()->numberBetween(1, 20),
-            'price' => $variation->wholesale_price ?? $variation->retail_price,
-            'unit_type' => $variation->unit_type,
-            'unit_value' => $variation->unit_value,
-            'weight_unit' => $variation->weight_unit,
-            'is_recurring' => false,
-            'notes' => fake()->optional()->sentence(),
+            'description' => $this->faker->sentence(),
+            'quantity' => $this->faker->randomFloat(2, 1, 10),
+            'price' => $variation->retail_price,
+            'tax_rate' => 10,
         ];
     }
 } 

@@ -5,13 +5,51 @@ namespace App\Filament\Resources\InvoiceResource\Pages;
 use App\Filament\Resources\InvoiceResource;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\Group;
 
 class ViewInvoice extends ViewRecord
 {
     protected static string $resource = InvoiceResource::class;
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Group::make()
+                    ->schema([
+                        Section::make('Invoice Details')
+                            ->collapsible()
+                            ->collapsed(false)
+                            ->schema([
+                                TextEntry::make('customer.name')
+                                    ->label('Customer'),
+                                TextEntry::make('number')
+                                    ->label('Invoice ID'),
+                                TextEntry::make('title')
+                                    ->label('Invoice Title')
+                                    ->columnSpan(3),
+                                TextEntry::make('paymentTerms.name')
+                                    ->label('Payment Terms'),
+                                TextEntry::make('issue_date')
+                                    ->label('Invoice Date')
+                                    ->date(),
+                            ])
+                            ->columns(2),
+                    ])
+                    ->columnSpan('full'),
+            ]);
+    }
+
+    public function getRelationManagers(): array
+    {
+        return [
+            \App\Filament\Resources\InvoiceResource\RelationManagers\ItemsRelationManager::class,
+            \App\Filament\Resources\InvoiceResource\RelationManagers\PaymentsRelationManager::class,
+        ];
+    }
 
     protected function getHeaderActions(): array
     {
@@ -26,40 +64,8 @@ class ViewInvoice extends ViewRecord
         ];
     }
 
-    public function form(Form $form): Form
+    public function hasCombinedRelationManagerTabsWithContent(): bool
     {
-        return $form
-            ->schema([
-                Grid::make(12)
-                    ->schema([
-                        Section::make()
-                            ->columnSpan(4)
-                            ->schema([
-                                // Customer details
-                                \Filament\Forms\Components\TextInput::make('customer.name')
-                                    ->label('Customer Name')
-                                    ->disabled(),
-                                \Filament\Forms\Components\TextInput::make('customer.email')
-                                    ->label('Email')
-                                    ->disabled(),
-                                \Filament\Forms\Components\TextInput::make('customer.phone')
-                                    ->label('Phone')
-                                    ->disabled(),
-                            ]),
-
-                        Section::make()
-                            ->columnSpan(8)
-                            ->schema([
-                                // Invoice details
-                                \Filament\Forms\Components\TextInput::make('invoice_number')
-                                    ->disabled(),
-                                \Filament\Forms\Components\TextInput::make('total_amount')
-                                    ->disabled()
-                                    ->prefix('$'),
-                                \Filament\Forms\Components\TextInput::make('status')
-                                    ->disabled(),
-                            ]),
-                    ]),
-            ]);
+        return false;
     }
 } 

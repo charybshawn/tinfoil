@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\InvoiceMail;
 
 class Invoice extends Model
 {
@@ -117,5 +119,35 @@ class Invoice extends Model
                 $invoice->items()->saveMany($items);
             }
         });
+    }
+
+    public function updateTotals()
+    {
+        $items = $this->items()->get();
+        
+        $subtotal = $items->sum('line_total');
+        $tax = $subtotal * 0.1; // 10% tax rate
+        $total = $subtotal + $tax;
+
+        $this->update([
+            'subtotal' => $subtotal,
+            'tax' => $tax,
+            'total' => $total,
+        ]);
+    }
+
+    public function sendEmail(): void
+    {
+        $emails = array_merge(
+            [$this->customer->email],
+            $this->customer->secondary_emails ?? []
+        );
+
+        Mail::to($emails)->send(new InvoiceMail($this));
+
+        $this->update([
+            'status' => 'sent',
+            'sent_at' => now(),
+        ]);
     }
 } 

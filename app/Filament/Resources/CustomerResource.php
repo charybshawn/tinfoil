@@ -11,6 +11,9 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use App\Filament\Resources\CustomerResource\RelationManagers;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Grid;
 
 class CustomerResource extends Resource
 {
@@ -24,61 +27,47 @@ class CustomerResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            Forms\Components\Section::make()
-                ->schema([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
-
-                    Forms\Components\TextInput::make('email')
-                        ->email()
-                        ->maxLength(255),
-
-                    Forms\Components\TextInput::make('phone')
-                        ->tel()
-                        ->maxLength(255),
-
-                    Forms\Components\TextInput::make('address')
-                        ->maxLength(255),
-
-                    Forms\Components\Grid::make()
-                        ->schema([
-                            Forms\Components\TextInput::make('city')
-                                ->maxLength(255),
-
-                            Forms\Components\TextInput::make('state')
-                                ->maxLength(255),
-
-                            Forms\Components\TextInput::make('postal_code')
-                                ->maxLength(255),
-                        ])
-                        ->columns(3),
-
-                    Forms\Components\Textarea::make('notes')
-                        ->rows(3)
-                        ->maxLength(65535)
-                        ->columnSpanFull(),
-
-                    Forms\Components\Select::make('group_id')
-                        ->relationship('group', 'name')
-                        ->label('Customer Group')
-                        ->searchable()
-                        ->preload()
-                        ->createOptionForm([
-                            Forms\Components\TextInput::make('name')
-                                ->required()
-                                ->live(onBlur: true)
-                                ->afterStateUpdated(fn ($state, Forms\Set $set) => 
-                                    $set('slug', Str::slug($state))
-                                ),
-                            Forms\Components\Hidden::make('slug'),
-                            Forms\Components\Textarea::make('description')
-                                ->rows(3),
-                        ]),
-                ])
-                ->columns(2),
-        ]);
+        return $form
+            ->schema([
+                Grid::make()
+                    ->schema([
+                        TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('email')
+                            ->email()
+                            ->required()
+                            ->maxLength(255),
+                        TagsInput::make('secondary_emails')
+                            ->label('Additional Emails')
+                            ->placeholder('Add email address')
+                            ->nestedRecursiveRules([
+                                'email',
+                            ]),
+                    ])->columns(2),
+                
+                Grid::make()
+                    ->schema([
+                        TextInput::make('street_address')
+                            ->label('Street Address')
+                            ->maxLength(255),
+                        TextInput::make('city')
+                            ->maxLength(255),
+                        TextInput::make('postal_code')
+                            ->label('Postal/ZIP Code')
+                            ->maxLength(20),
+                        TextInput::make('state')
+                            ->label('State/Province')
+                            ->maxLength(255),
+                        TextInput::make('country')
+                            ->maxLength(255),
+                    ])->columns(2),
+                
+                TextInput::make('phone')
+                    ->tel()
+                    ->maxLength(255),
+                // ... rest of your existing fields
+            ]);
     }
 
     public static function table(Table $table): Table

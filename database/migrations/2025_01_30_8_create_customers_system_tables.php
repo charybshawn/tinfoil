@@ -20,15 +20,18 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->nullable();
+            $table->string('email')->unique();
+            $table->json('secondary_emails')->nullable();
             $table->string('phone')->nullable();
-            $table->string('address')->nullable();
+            $table->string('street_address')->nullable();
             $table->string('city')->nullable();
-            $table->string('state')->nullable();
+            $table->string('prov')->nullable(); // Province/State
+            $table->string('country')->nullable();
             $table->string('postal_code')->nullable();
             $table->text('notes')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('status')->default('active');
             $table->foreignId('group_id')->nullable()->constrained('customer_groups')->nullOnDelete();
+            $table->string('stripe_id')->nullable()->after('id');            
             $table->timestamps();
             $table->softDeletes();
         });
